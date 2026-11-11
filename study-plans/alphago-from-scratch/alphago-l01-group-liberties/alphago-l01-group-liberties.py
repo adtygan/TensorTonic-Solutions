@@ -15,33 +15,21 @@ def get_neighbors(r:int, c:int, N:int):
             neighbors_list.append(pos)
     return neighbors_list
 
-def find_group(r:int, c:int, N:int, board:list, visited:set, group:list, color: int):
-    neighbors = get_neighbors(r, c, N)
-    for neighbor in neighbors:
-        n_r, n_c = neighbor
-        if board[n_r][n_c] == color and neighbor not in visited:
-            group.append(neighbor)
-            visited.add(neighbor)
-            find_group(n_r, n_c, N, board, visited, group, color)
-    return group
-    
-    
+# claude suggested this function as a hybrid between my previous one and ref solution
+def go_group_liberties(board, row, col):
+    grid = np.asarray(board)
+    N = grid.shape[0]
+    colour = grid[row, col]
+    group, liberties = {(row, col)}, set()
+    stack = [(row, col)]
 
-def go_group_liberties(board: list, row: int, col: int) -> tuple:
-    """
-    Returns: a tuple of two sorted coordinate lists: group and liberties.
-    """
-    stone_color = board[row][col]
-    stone_group = list[(row, col)]
-    N = len(board)
-    group = find_group(row, col, N, board, {(row, col)}, [(row, col)], stone_color)
+    while stack:
+        r, c = stack.pop()
+        for nr, nc in get_neighbors(r, c, N):
+            if grid[nr, nc] == 0:
+                liberties.add((nr, nc))
+            elif grid[nr, nc] == colour and (nr, nc) not in group:
+                group.add((nr, nc))          # mark at push time, so no duplicates
+                stack.append((nr, nc))
 
-    liberties = set()
-    for group_mem in group:
-        g_r, g_c = group_mem
-        neighbors = get_neighbors(g_r, g_c, N)
-        for n_r, n_c in neighbors:
-            if board[n_r][n_c] == 0:
-                liberties.add((n_r, n_c))
-        
-    return (sorted(group), sorted(list(liberties)))
+    return sorted(group), sorted(liberties)
