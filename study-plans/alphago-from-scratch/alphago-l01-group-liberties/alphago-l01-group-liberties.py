@@ -1,35 +1,32 @@
 import numpy as np
 
-def validate_pos(pos:tuple, N:int) -> bool:
-    i, j = pos
-    if i<0 or j<0 or i>=N or j>=N:
-        return False
-    else:
-        return True
+def get_neighbors(r: int, c:int, N: int) -> list:
+    neighbors = [(r, c-1), (r, c+1), (r-1, c), (r+1, c)]
+    valid_neighbors = []
+    for (i,j) in neighbors:
+        if i>=0 and i<N and j>=0 and j<N:
+            valid_neighbors.append((i,j))
+    return valid_neighbors
+        
+    
 
-def get_neighbors(r:int, c:int, N:int):
-    left, right, up, down = (r, c-1), (r, c+1), (r-1, c), (r+1, c)
-    neighbors_list = []
-    for pos in [left, right, up, down]:
-        if validate_pos(pos, N):
-            neighbors_list.append(pos)
-    return neighbors_list
-
-# claude suggested this function as a hybrid between my previous one and ref solution
-def go_group_liberties(board, row, col):
-    grid = np.asarray(board)
-    N = grid.shape[0]
-    colour = grid[row, col]
-    group, liberties = {(row, col)}, set()
+def go_group_liberties(board: list, row: int, col: int) -> tuple:
+    """
+    Returns: a tuple of two sorted coordinate lists: group and liberties.
+    """
+    stone_color = board[row][col]
+    N = len(board)
+    group = {(row, col)}
+    liberties = set()
     stack = [(row, col)]
-
-    while stack:
-        r, c = stack.pop()
-        for nr, nc in get_neighbors(r, c, N):
-            if grid[nr, nc] == 0:
-                liberties.add((nr, nc))
-            elif grid[nr, nc] == colour and (nr, nc) not in group:
-                group.add((nr, nc))          # mark at push time, so no duplicates
-                stack.append((nr, nc))
-
-    return sorted(group), sorted(liberties)
+    while len(stack) >0:
+        curr_r, curr_c = stack.pop(0)
+        neighbors = get_neighbors(curr_r, curr_c, N)
+        for (nei_r, nei_c) in neighbors:
+            if board[nei_r][nei_c] == 0:
+                liberties.add((nei_r, nei_c))
+            elif board[nei_r][nei_c] == stone_color and (nei_r, nei_c) not in group:
+                group.add((nei_r, nei_c))
+                stack.append((nei_r, nei_c))
+    return (sorted(group), sorted(liberties))
+        
