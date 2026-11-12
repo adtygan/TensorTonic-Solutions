@@ -7,8 +7,6 @@ def get_neighbors(r: int, c:int, N: int) -> list:
         if i>=0 and i<N and j>=0 and j<N:
             valid_neighbors.append((i,j))
     return valid_neighbors
-        
-    
 
 def go_group_liberties(board: list, row: int, col: int) -> tuple:
     """
